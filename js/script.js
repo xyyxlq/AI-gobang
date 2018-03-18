@@ -1,8 +1,19 @@
+/**
+ * 待优化：
+ *  【√】重开按钮
+ *  【√】BUG：先弹出你赢了，再落子。
+ *  可选执黑 or 执白
+ *  可选玩家先 or 电脑先
+ *  优化电脑AI算法：进攻防守占比等，使电脑更聪明。
+ */
+
 var chess = document.getElementById('chess'),
     ctx = chess.getContext('2d');
 var me = true; // 初始化落子，默认黑先
 var over = false; // 该局是否结束
-
+// 赢法统计的数组
+var myWin = [],
+    computerWin = [];
 
 // 赢法数组【统计所有赢法】
 var wins = [];
@@ -49,31 +60,12 @@ for (var i = 0; i < 11; i++) {
         count++;
     }
 }
-
 console.log(count); // 总共572中赢法
 
-// 赢法统计数组初始化
-var myWin = [],
-    computerWin = [];
-for (var i = 0; i < count; i++) {
-    myWin[i] = 0;
-    computerWin[i] = 0;
-}
-
-
-// 初始化空棋盘，0为没落子，1为白子，2为黑子
-var chessBoard = [];
-for (var i = 0; i < 15; i++) {
-    chessBoard[i] = [];
-    for (var j = 0; j < 15; j++) {
-        chessBoard[i][j] = 0;
-    }
-}
-
-// 设置画线颜色
-ctx.strokeStyle = '#BFBFBF';
-// 画棋盘网格线
+// 画棋盘网格线方法
 var drawChessBoard = function () {
+    // 设置棋盘网格线颜色
+    ctx.strokeStyle = '#BFBFBF';
     for (var i = 0; i < 15; i++) {
         // 定义棋盘表格-竖线
         ctx.moveTo(15 + i * 30, 15);
@@ -94,6 +86,33 @@ bg.onload = function () {
     // 先设置背景图片，再画棋盘线，否则棋盘线会被背景图片挡住
     drawChessBoard();
 }
+
+// 初始化空棋盘，0为没落子，1为白子，2为黑子
+var chessBoard = [];
+// 重来方法
+var reset = function () {
+    // 重置判断条件
+    over = false;
+    me = true;
+    // 清空画布
+    chess.height = chess.height;
+    // 画底图以及网格线
+    ctx.drawImage(bg, 0, 0, 450, 450);
+    drawChessBoard();
+    // 棋盘数组初始化
+    for (var i = 0; i < 15; i++) {
+        chessBoard[i] = [];
+        for (var j = 0; j < 15; j++) {
+            chessBoard[i][j] = 0;
+        }
+    }
+    // 赢法初始化
+    for (var i = 0; i < count; i++) {
+        myWin[i] = 0;
+        computerWin[i] = 0;
+    }
+}
+reset();
 
 /**
  * 绘制棋子方法
@@ -145,8 +164,12 @@ chess.onclick = function (e) {
                 computerWin[k] = 6;
                 // 当符合该种赢法的子达到5， 则判定你赢了
                 if (myWin[k] == 5) {
-                    window.alert("你赢了");
                     over = true;
+                    // 此处是为了保证先落子再弹出获胜窗口。
+                    // todo？默认先弹出窗口是什么原理没不懂
+                    setTimeout(function () {
+                        alert("你赢了！")
+                    }, 300);
                 }
             }
         }
@@ -242,8 +265,10 @@ var computerAI = function () {
             computerWin[k]++;
             myWin[k] = 6;
             if (computerWin[k] == 5) {
-                window.alert("电脑赢了");
                 over = true;
+                setTimeout(function () {
+                    alert("你输了！")
+                }, 300);
             }
         }
     }
@@ -252,13 +277,3 @@ var computerAI = function () {
         me = !me;
     }
 }
-
-
-// todo:BUG：先弹出你赢了，再落子。
-/**
- * 待优化：
- *  重开按钮
- *  可选执黑 or 执白
- *  可选玩家先 or 电脑先
- *  优化电脑AI算法：进攻防守占比等。让电脑更聪明。
- */
